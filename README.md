@@ -73,27 +73,6 @@ http://localhost:3000
 
 ---
 
-## 📁 Estructura de Carpetas
-xpmovies/
-├── xpmovies/
-│   ├── pages/
-│   │   ├── index.py          # Página de Inicio
-│   │   ├── pelicula.py       # Página de Descripción de Película
-│   │   ├── reservas.py       # Página de Reservas y Asientos
-│   │   └── mock_data.py      # Datos temporales de películas
-│   ├── components/
-│   │   ├── navbar.py         # Barra de navegación
-│   │   ├── footer.py         # Pie de página
-│   │   └── auth_modal.py     # Modal de Login y Registro
-│   ├── styles/
-│   │   └── theme.py          # Paleta de colores y estilos globales
-│   └── xpmovies.py           # Archivo principal de la app
-├── assets/                   # Imágenes y recursos estáticos
-├── pyproject.toml            # Dependencias de Poetry
-├── rxconfig.py               # Configuración de Reflex
-└── README.md                 # Este archivo
----
-
 ## 🌿 Flujo de Trabajo Git (GitFlow)
 
 main
@@ -123,7 +102,7 @@ main
 | Rol | Nombre | Responsabilidad |
 |-----|--------|-----------------|
 | Frontend | Damian | Diseño y desarrollo visual con Reflex |
-| Backend | *Compañero* | API REST, base de datos MySQL |
+| Backend | Elvin | API REST, base de datos MySQL |
 
 ---
 
