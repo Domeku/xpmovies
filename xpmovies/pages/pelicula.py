@@ -11,11 +11,6 @@ from xpmovies.styles.theme import (
 )
 
 
-# ─── STATE ───────────────────────────────────────────────────────────
-# Aquí guardamos qué película está seleccionada actualmente.
-# Cuando el usuario hace clic en "Ver Película", guardamos
-# los datos de esa película en el State para mostrarlos.
-
 class PeliculaState(rx.State):
     pelicula_id: int = 1
 
@@ -30,7 +25,6 @@ class PeliculaState(rx.State):
         self.pelicula_id = pid
 
 
-# ─── HELPERS ─────────────────────────────────────────────────────────
 def badge_clasificacion(clasificacion: str) -> rx.Component:
     colores = {"PG": "#2ecc71", "PG-13": "#f39c12", "R": "#e74c3c"}
     color = colores.get(clasificacion, ROJO_PRINCIPAL)
@@ -42,7 +36,6 @@ def badge_clasificacion(clasificacion: str) -> rx.Component:
     )
 
 
-# ─── HERO ─────────────────────────────────────────────────────────────
 def hero_pelicula(pelicula: dict) -> rx.Component:
     return rx.box(
         rx.box(
@@ -71,9 +64,10 @@ def hero_pelicula(pelicula: dict) -> rx.Component:
                             color=GRIS_TEXTO, font_family=FUENTE_SECUNDARIA),
                     spacing="2", align="center",
                 ),
+                # Botón de reservar va a la primera tanda por defecto
                 rx.link(
                     rx.button("🎬  Reservar Asientos", **BOTON_PRIMARIO, size="3"),
-                    href=f"/reservas/{pelicula['id']}",
+                    href=f"/reservas/{pelicula['id']}/1",
                 ),
                 spacing="4", align="center",
             ),
@@ -87,7 +81,6 @@ def hero_pelicula(pelicula: dict) -> rx.Component:
     )
 
 
-# ─── DESCRIPCIÓN ──────────────────────────────────────────────────────
 def seccion_descripcion(pelicula: dict) -> rx.Component:
     return rx.box(
         rx.flex(
@@ -133,7 +126,6 @@ def seccion_descripcion(pelicula: dict) -> rx.Component:
     )
 
 
-# ─── DETALLES ─────────────────────────────────────────────────────────
 def seccion_detalles(pelicula: dict) -> rx.Component:
     def fila(etiqueta, valor):
         return rx.hstack(
@@ -168,9 +160,10 @@ def seccion_detalles(pelicula: dict) -> rx.Component:
     )
 
 
-# ─── ITINERARIO ───────────────────────────────────────────────────────
 def seccion_itinerario(pelicula: dict) -> rx.Component:
-    def tarjeta_tanda(tanda: str) -> rx.Component:
+    # ── idx es el número de tanda (0, 1, 2) ──────────────────────────
+    # Lo usamos para construir la URL /reservas/{id}/{idx+1}
+    def tarjeta_tanda(tanda: str, idx: int) -> rx.Component:
         return rx.box(
             rx.vstack(
                 rx.text("🎬", font_size="2em"),
@@ -181,7 +174,10 @@ def seccion_itinerario(pelicula: dict) -> rx.Component:
                         font_size="0.8em", font_family=FUENTE_SECUNDARIA),
                 rx.link(
                     rx.button("Seleccionar", **BOTON_PRIMARIO, width="100%"),
-                    href=f"/reservas/{pelicula['id']}",
+                    # /reservas/1/1 = película 1, tanda 1
+                    # /reservas/1/2 = película 1, tanda 2
+                    # /reservas/1/3 = película 1, tanda 3
+                    href=f"/reservas/{pelicula['id']}/{idx + 1}",
                     width="100%",
                 ),
                 align="center", spacing="3", width="100%",
@@ -206,7 +202,8 @@ def seccion_itinerario(pelicula: dict) -> rx.Component:
                     color=GRIS_TEXTO, font_family=FUENTE_SECUNDARIA,
                     font_size="0.95em"),
             rx.flex(
-                *[tarjeta_tanda(t) for t in pelicula["tandas"]],
+                # enumerate() nos da el índice (0,1,2) y el valor de cada tanda
+                *[tarjeta_tanda(t, i) for i, t in enumerate(pelicula["tandas"])],
                 gap="24px", flex_wrap="wrap",
                 justify_content="center", width="100%",
             ),
@@ -216,7 +213,6 @@ def seccion_itinerario(pelicula: dict) -> rx.Component:
     )
 
 
-# ─── RELACIONADAS ─────────────────────────────────────────────────────
 def seccion_relacionadas(pelicula_actual_id: int) -> rx.Component:
     otras = [p for p in PELICULAS if p["id"] != pelicula_actual_id][:3]
 
@@ -264,11 +260,6 @@ def seccion_relacionadas(pelicula_actual_id: int) -> rx.Component:
         padding_y="60px", width="100%",
     )
 
-
-# ─── PÁGINAS INDIVIDUALES POR PELÍCULA ────────────────────────────────
-# En vez de una sola función que lee el ID de la URL,
-# creamos una función por cada película. Así Reflex
-# no tiene problemas comparando variables en tiempo de compilación.
 
 def pelicula_1(): return rx.box(navbar(), hero_pelicula(PELICULAS[0]), seccion_descripcion(PELICULAS[0]), seccion_detalles(PELICULAS[0]), seccion_itinerario(PELICULAS[0]), seccion_relacionadas(PELICULAS[0]["id"]), footer(), **PAGINA_BASE)
 def pelicula_2(): return rx.box(navbar(), hero_pelicula(PELICULAS[1]), seccion_descripcion(PELICULAS[1]), seccion_detalles(PELICULAS[1]), seccion_itinerario(PELICULAS[1]), seccion_relacionadas(PELICULAS[1]["id"]), footer(), **PAGINA_BASE)
