@@ -1,102 +1,95 @@
 # navbar.py
-# Este archivo construye la barra de navegación que aparecerá
-# en la parte superior de TODAS las páginas de XP Movies.
-
 import reflex as rx
 from xpmovies.styles.theme import (
     NEGRO_NAVBAR, ROJO_PRINCIPAL, BLANCO, GRIS_TEXTO,
     BOTON_PRIMARIO, BOTON_SECUNDARIO, FUENTE_PRINCIPAL, FUENTE_SECUNDARIA
 )
+from xpmovies.components.auth_modal import AuthState, auth_modal
 
 
 def navbar() -> rx.Component:
-    # rx.hstack = acomoda los elementos en fila horizontal
-    # rx.vstack = acomoda los elementos en columna vertical
-    # rx.box   = una caja contenedora (como un div en HTML)
-    # rx.text  = texto
-    # rx.link  = enlace clickeable
-
     return rx.box(
+        # El modal va aquí para que esté disponible en todas las páginas
+        auth_modal(),
+
         rx.hstack(
             # ── LOGO ──────────────────────────────────────────────
-            # El logo es simplemente el nombre "XP MOVIES" en rojo
             rx.link(
                 rx.hstack(
-                    rx.text(
-                        "XP",
-                        color=ROJO_PRINCIPAL,
-                        font_size="1.8em",
-                        font_weight="bold",
-                        font_family=FUENTE_PRINCIPAL,
-                        letter_spacing="2px",
-                    ),
-                    rx.text(
-                        "MOVIES",
-                        color=BLANCO,
-                        font_size="1.8em",
-                        font_weight="bold",
-                        font_family=FUENTE_PRINCIPAL,
-                        letter_spacing="2px",
-                    ),
+                    rx.text("XP", color=ROJO_PRINCIPAL, font_size="1.8em",
+                            font_weight="bold", font_family=FUENTE_PRINCIPAL,
+                            letter_spacing="2px"),
+                    rx.text("MOVIES", color=BLANCO, font_size="1.8em",
+                            font_weight="bold", font_family=FUENTE_PRINCIPAL,
+                            letter_spacing="2px"),
                     spacing="1",
                 ),
-                href="/",  # Al hacer clic va a la página de inicio
-                text_decoration="none",
+                href="/", text_decoration="none",
             ),
 
-            # ── MENÚ DE NAVEGACIÓN ────────────────────────────────
+            # ── MENÚ ──────────────────────────────────────────────
             rx.hstack(
-                rx.link(
-                    "Inicio",
-                    href="/",
-                    color=GRIS_TEXTO,
-                    font_family=FUENTE_SECUNDARIA,
-                    font_size="0.95em",
-                    text_decoration="none",
-                    _hover={"color": BLANCO},
-                ),
-                rx.link(
-                    "Cartelera",
-                    href="/cartelera",
-                    color=GRIS_TEXTO,
-                    font_family=FUENTE_SECUNDARIA,
-                    font_size="0.95em",
-                    text_decoration="none",
-                    _hover={"color": BLANCO},
-                ),
-                rx.link(
-                    "Próximamente",
-                    href="/proximamente",
-                    color=GRIS_TEXTO,
-                    font_family=FUENTE_SECUNDARIA,
-                    font_size="0.95em",
-                    text_decoration="none",
-                    _hover={"color": BLANCO},
-                ),
+                rx.link("Inicio", href="/", color=GRIS_TEXTO,
+                        font_family=FUENTE_SECUNDARIA, font_size="0.95em",
+                        text_decoration="none", _hover={"color": BLANCO}),
+                rx.link("Cartelera", href="/cartelera", color=GRIS_TEXTO,
+                        font_family=FUENTE_SECUNDARIA, font_size="0.95em",
+                        text_decoration="none", _hover={"color": BLANCO}),
+                rx.link("Próximamente", href="/proximamente", color=GRIS_TEXTO,
+                        font_family=FUENTE_SECUNDARIA, font_size="0.95em",
+                        text_decoration="none", _hover={"color": BLANCO}),
                 spacing="6",
-                # En pantallas pequeñas ocultamos el menú
                 display=["none", "none", "flex"],
             ),
 
             # ── BOTONES DE SESIÓN ─────────────────────────────────
-            # Por ahora estos botones no hacen nada funcional,
-            # tu compañero de backend les dará vida después.
-            rx.hstack(
-                rx.button(
-                    "Registrarse",
-                    **BOTON_SECUNDARIO,
-                    size="2",
+            # rx.cond muestra botones distintos según si hay sesión o no
+            rx.cond(
+                AuthState.usuario_logueado,
+
+                # Usuario logueado: muestra nombre y botón cerrar sesión
+                rx.hstack(
+                    rx.text(
+                        "👤 " + AuthState.nombre_usuario,
+                        color=BLANCO,
+                        font_family=FUENTE_SECUNDARIA,
+                        font_size="0.9em",
+                        font_weight="600",
+                    ),
+                    rx.button(
+                        "Cerrar Sesión",
+                        on_click=AuthState.cerrar_sesion,
+                        background_color="transparent",
+                        color=GRIS_TEXTO,
+                        border=f"1px solid {GRIS_TEXTO}",
+                        border_radius="6px",
+                        padding="8px 16px",
+                        font_size="0.85em",
+                        font_family=FUENTE_SECUNDARIA,
+                        cursor="pointer",
+                        _hover={"color": BLANCO, "border_color": BLANCO},
+                    ),
+                    spacing="3", align="center",
                 ),
+
+                # Usuario NO logueado: muestra Registrarse e Iniciar Sesión
+                rx.hstack(
                 rx.button(
-                    "Iniciar Sesión",
-                    **BOTON_PRIMARIO,
-                    size="2",
+                 "Registrarse",
+                 on_click=AuthState.abrir_modal,
+                 **BOTON_SECUNDARIO,
+                 size="2",
                 ),
-                spacing="3",
+                    rx.button(
+                        "Iniciar Sesión",
+                        on_click=AuthState.abrir_modal,
+                        **BOTON_PRIMARIO,
+                        size="2",
+                    ),
+                    spacing="3",
+                ),
             ),
 
-            # justify="between" separa el logo a la izquierda
-            # y los botones a la derecha
             justify="between",
             align="center",
             width="100%",
@@ -104,11 +97,10 @@ def navbar() -> rx.Component:
             padding_y="16px",
         ),
 
-        # Estilos del contenedor principal de la navbar
         background_color=NEGRO_NAVBAR,
         width="100%",
-        position="sticky",   # Se queda fija arriba al hacer scroll
+        position="sticky",
         top="0",
-        z_index="100",       # Se mantiene por encima de todo lo demás
-        border_bottom=f"1px solid #1a1a1a",
+        z_index="100",
+        border_bottom="1px solid #1a1a1a",
     )
