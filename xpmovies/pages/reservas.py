@@ -2,6 +2,7 @@
 import reflex as rx
 from xpmovies.components.navbar import navbar
 from xpmovies.components.footer import footer
+from xpmovies.components.auth_modal import AuthState
 from xpmovies.pages.mock_data import PELICULAS
 from xpmovies.styles.theme import (
     NEGRO_FONDO, NEGRO_CARD, ROJO_PRINCIPAL, ROJO_HOVER,
@@ -26,9 +27,6 @@ class ReservasState(rx.State):
     telefono: str = ""
 
     def on_load(self, pid: int, tanda: str):
-        # Esta función se llama CADA VEZ que el usuario entra a la página.
-        # Limpia los asientos seleccionados y configura la película y tanda.
-        # Así al cambiar de sala o tanda siempre empieza limpio.
         self.asientos_seleccionados = []
         self.pelicula_id = pid
         self.tanda_actual = tanda
@@ -58,14 +56,9 @@ class ReservasState(rx.State):
         else:
             self.asientos_seleccionados = self.asientos_seleccionados + [asiento]
 
-    def set_nombre(self, value: str):
-        self.nombre = value
-
-    def set_email(self, value: str):
-        self.email = value
-
-    def set_telefono(self, value: str):
-        self.telefono = value
+    def set_nombre(self, value: str): self.nombre = value
+    def set_email(self, value: str): self.email = value
+    def set_telefono(self, value: str): self.telefono = value
 
 
 # ─── LEYENDA ──────────────────────────────────────────────────────────
@@ -235,8 +228,6 @@ def resumen_pago(pelicula: dict, tanda: str) -> rx.Component:
                 rx.text("RESUMEN DE PAGO", **TITULO_SECCION),
                 spacing="3", align="center",
             ),
-            # Tanda viene directo del dict de Python, no del State
-            # así siempre muestra la hora correcta sin importar nada
             fila("Película", pelicula["titulo"]),
             fila("Tanda", tanda),
             fila("Asientos", ReservasState.asientos_texto),
@@ -286,8 +277,6 @@ def resumen_pago(pelicula: dict, tanda: str) -> rx.Component:
 
 
 # ─── PÁGINA COMPLETA ──────────────────────────────────────────────────
-# Recibe la película y la tanda como datos de Python puro
-# así no depende del State para mostrar la información correcta
 def reservas_page(pelicula: dict, tanda: str) -> rx.Component:
     return rx.box(
         navbar(),
@@ -306,26 +295,80 @@ def reservas_page(pelicula: dict, tanda: str) -> rx.Component:
             background_color="#0D0D0D", padding_x="40px", padding_y="40px",
             text_align="center", border_bottom=f"1px solid {GRIS_BORDE}",
         ),
-        rx.box(
-            rx.flex(
-                rx.box(mapa_asientos(), flex="2", min_width="300px"),
-                rx.vstack(
-                    formulario_contacto(),
-                    resumen_pago(pelicula, tanda),
-                    spacing="6", flex="1", min_width="300px",
+
+        # Si está logueado muestra el mapa, si no muestra el aviso
+        rx.cond(
+            AuthState.usuario_logueado,
+
+            # ── Usuario logueado ───────────────────────────────────
+            rx.box(
+                rx.flex(
+                    rx.box(mapa_asientos(), flex="2", min_width="300px"),
+                    rx.vstack(
+                        formulario_contacto(),
+                        resumen_pago(pelicula, tanda),
+                        spacing="6", flex="1", min_width="300px",
+                    ),
+                    gap="30px", flex_wrap="wrap",
+                    align_items="start", width="100%",
                 ),
-                gap="30px", flex_wrap="wrap",
-                align_items="start", width="100%",
+                padding_x="40px", padding_y="50px", width="100%",
             ),
-            padding_x="40px", padding_y="50px", width="100%",
+
+            # ── Usuario NO logueado ────────────────────────────────
+            rx.box(
+                rx.vstack(
+                    rx.text("🔒", font_size="4em"),
+                    rx.text(
+                        "INICIA SESIÓN PARA CONTINUAR",
+                        color=BLANCO,
+                        font_size="1.8em",
+                        font_weight="bold",
+                        font_family=FUENTE_PRINCIPAL,
+                        letter_spacing="2px",
+                        text_align="center",
+                    ),
+                    rx.text(
+                        "Necesitas una cuenta para reservar asientos en XP Movies.",
+                        color=GRIS_TEXTO,
+                        font_family=FUENTE_SECUNDARIA,
+                        font_size="1em",
+                        text_align="center",
+                    ),
+                    rx.hstack(
+                        rx.button(
+                            "Iniciar Sesión",
+                            on_click=AuthState.abrir_modal,
+                            **BOTON_PRIMARIO,
+                            size="3",
+                        ),
+                        rx.link(
+                            rx.button(
+                                "Volver a la película",
+                                **BOTON_SECUNDARIO,
+                                size="3",
+                            ),
+                            href=f"/pelicula/{pelicula['id']}",
+                        ),
+                        spacing="4",
+                        flex_wrap="wrap",
+                        justify="center",
+                    ),
+                    spacing="5",
+                    align="center",
+                    padding_y="80px",
+                ),
+                width="100%",
+                text_align="center",
+            ),
         ),
+
         footer(),
         **PAGINA_BASE,
     )
 
 
-# ─── PÁGINAS INDIVIDUALES POR PELÍCULA Y TANDA ────────────────────────
-# on_load limpia los asientos cada vez que entras a la página
+# ─── PÁGINAS INDIVIDUALES ─────────────────────────────────────────────
 def _pagina(pid: int, tidx: int) -> rx.Component:
     p = PELICULAS[pid - 1]
     tanda = p["tandas"][tidx]

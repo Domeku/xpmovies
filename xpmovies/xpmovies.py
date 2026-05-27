@@ -1,6 +1,8 @@
 # xpmovies.py
 import reflex as rx
 from xpmovies.pages.index import index_page
+from xpmovies.pages.cartelera import cartelera_page
+from xpmovies.pages.proximamente import proximamente_page
 from xpmovies.pages.pelicula import (
     pelicula_1, pelicula_2, pelicula_3, pelicula_4,
     pelicula_5, pelicula_6, pelicula_7, pelicula_8,
@@ -24,6 +26,8 @@ app = rx.App(
 )
 
 app.add_page(index_page, route="/")
+app.add_page(cartelera_page, route="/cartelera")
+app.add_page(proximamente_page, route="/proximamente")
 
 app.add_page(pelicula_1, route="/pelicula/1")
 app.add_page(pelicula_2, route="/pelicula/2")
@@ -34,8 +38,6 @@ app.add_page(pelicula_6, route="/pelicula/6")
 app.add_page(pelicula_7, route="/pelicula/7")
 app.add_page(pelicula_8, route="/pelicula/8")
 
-# on_load=ReservasState.on_load le dice a Reflex:
-# "cada vez que alguien entre a esta página, limpia el State"
 app.add_page(reservas_1_1, route="/reservas/1/1", on_load=ReservasState.on_load(1, "4:00 PM"))
 app.add_page(reservas_1_2, route="/reservas/1/2", on_load=ReservasState.on_load(1, "7:00 PM"))
 app.add_page(reservas_1_3, route="/reservas/1/3", on_load=ReservasState.on_load(1, "10:00 PM"))
