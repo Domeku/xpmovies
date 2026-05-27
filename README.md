@@ -68,9 +68,6 @@ poetry install
 poetry run reflex run
 ```
 
-**4. Abrir en el navegador**
-http://localhost:3000
-
 ---
 
 ## 🌿 Flujo de Trabajo Git (GitFlow)
@@ -110,8 +107,8 @@ main
 
 - [Reflex Documentation](https://reflex.dev/docs)
 - [Poetry Documentation](https://python-poetry.org/docs)
-- [GitHub Repository](https://github.com/TU-USUARIO/xpmovies)
+- [GitHub Repository](https://github.com/Domeku/xpmovies)
 
 ---
 
-*Proyecto Final — Desarrollo Web | 2025*
+*Proyecto Final — Desarrollo Web | 2026*
